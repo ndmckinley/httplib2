@@ -1580,6 +1580,7 @@ class Http(object):
         ca_certs=None,
         disable_ssl_certificate_validation=False,
         ssl_version=None,
+        user_agent=None,
     ):
         """If 'cache' is a string then it is used as a directory name for
         a disk cache. Otherwise it must be an object that supports the
@@ -1605,6 +1606,10 @@ class Http(object):
         not be performed.
 
         By default, ssl.PROTOCOL_SSLv23 will be used for the ssl version.
+        
+        user_agent is a default user-agent string to use if one is not provided
+        in the headers of a particular request.  If left empty, the string
+        "Python-httplib2/{{httplib2_version}}" will be used.
         """
         self.proxy_info = proxy_info
         self.ca_certs = ca_certs
@@ -1619,6 +1624,12 @@ class Http(object):
             self.cache = FileCache(cache)
         else:
             self.cache = cache
+        
+        # The default user-agent string, to be used if none is provided.
+        if user_agent:
+            self.user_agent = user_agent
+        else:
+            self.user_agent = "Python-httplib2/%s (gzip)" % __version__
 
         # Name/password
         self.credentials = Credentials()
@@ -1933,7 +1944,7 @@ class Http(object):
                 headers = self._normalize_headers(headers)
 
             if "user-agent" not in headers:
-                headers["user-agent"] = "Python-httplib2/%s (gzip)" % __version__
+                headers["user-agent"] = self.user_agent
 
             uri = iri2uri(uri)
 
